@@ -1,0 +1,28 @@
+前言：本来想像LeetCode那样一题一个文件，多答案+题解的形式来搞的。但是看了sql的题目有些就是一句话，不值得单独一个文件，所以还是全部放到一个文件里吧。
+
+
+# 1.倒序首条，这里直接用order by + limit
+SELECT * FROM employees ORDER BY hire_date DESC LIMIT 1;
+
+# 2.倒序第三条，同第一题，不过limit要给两个参数，相当于index和length
+SELECT * FROM employees ORDER BY hire_date DESC LIMIT 2,1;
+
+# 3.左连接、右连接和内连接的用法
+SELECT s.*, d.dept_no FROM salaries s INNER JOIN dept_manager d ON (s.emp_no=d.emp_no) ORDER BY s.emp_no ASC;
+
+# 4.同上一题
+SELECT e.last_name, e.first_name, d.dept_no FROM dept_emp d LEFT JOIN employees e ON (d.emp_no=e.emp_no);
+
+# 5.同上一题
+SELECT e.last_name, e.first_name, d.dept_no FROM dept_emp d RIGHT JOIN employees e ON (d.emp_no=e.emp_no);
+
+# 7.having的用法，一般统计筛选用
+SELECT emp_no, COUNT(emp_no) as t FROM salaries GROUP BY emp_no HAVING t>15;
+
+# 8. 分组+排序
+SELECT salary FROM salaries GROUP BY salary ORDER BY salary DESC;
+
+# 10.外连接的变种
+SELECT e.emp_no FROM employees e LEFT JOIN dept_manager d ON (e.emp_no=d.emp_no) WHERE d.dept_no IS NULL;
+
+# 
