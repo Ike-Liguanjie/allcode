@@ -110,4 +110,3 @@ SELECT * FROM salaries FORCE INDEX (idx_emp_no) WHERE emp_no='10005';
 
 # 40.难度：中等 alert增加字段
 ALTER TABLE actor ADD create_date datetime NOT NULL DEFAULT '2020-10-01 00:00:00' AFTER last_update;
-
