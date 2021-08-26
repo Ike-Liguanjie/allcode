@@ -48,4 +48,3 @@ def merge(left_list: list, right_list: list) -> list:
 
 if __name__ == "__main__":
     print(merge_sort_merge(sort_list))
-    a = [1, 2]
