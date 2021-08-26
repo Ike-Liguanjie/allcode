@@ -3,9 +3,11 @@
 # @Author  : Ike
 # @File    : bubble-sort.py
 # @Software: PyCharm
+from config import *
 
 
-def bubble_sort(arr):
+@time_log("冒泡排序算法")
+def bubble_sort(arr: list) -> list:
     """
     时间复杂度：O(n²)  空间复杂度：O(1)
     冒泡排序思路：
@@ -25,4 +27,4 @@ def bubble_sort(arr):
 
 
 if __name__ == '__main__':
-    print(bubble_sort([3, 1, 5, 4, 2, 6]))
+    print(bubble_sort(sort_list))
