@@ -46,5 +46,18 @@ def merge(left_list: list, right_list: list) -> list:
     return result
 
 
+def merge_sort_in_iteration(arr: list) -> list:
+    length = len(arr)
+    step = 1
+    while step < length:
+        index = 0
+        while index * step < length:
+            arr[index * step:index * step + 2 * step] = merge(arr[index*step: index * step + step], arr[index * step + step:index * step + step + step])
+            index += 1
+        step *= 2
+    return arr
+
+
 if __name__ == "__main__":
-    print(merge_sort_merge(sort_list))
+    # print(merge_sort_merge(sort_list))
+    print(merge_sort_in_iteration(sort_list))
