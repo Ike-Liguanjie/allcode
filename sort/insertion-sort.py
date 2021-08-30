@@ -10,7 +10,7 @@ from config import *
 def insertion_sort(arr: list) -> list:
     """
     时间复杂度：O(n²)  空间复杂度：O(1)
-    插入排序思路：
+    插入排序算法思路：
     1.循环保存被插入的元素insert_num,比较的索引insert_index为被插元素的前一个，即index-1
     2.从列表第二个元素开始，不断的和前一个比较，当前一个元素insert_index>-1且比insert_num大的时候，说明满足替换条件
       此时把insert_index位置的值后移一位，即arr[insert_index + 1] = arr[insert_index]，同时insert_index-1继续比较寻找
