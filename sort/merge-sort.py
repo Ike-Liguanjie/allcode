@@ -6,6 +6,24 @@
 from config import *
 
 
+def merge(left_list: list, right_list: list) -> list:
+    result = []
+    while left_list or right_list:
+        if left_list:
+            if right_list:
+                if left_list[0] < right_list[0]:
+                    result.append(left_list.pop(0))
+                else:
+                    result.append(right_list.pop(0))
+            else:
+                result += left_list
+                left_list = []
+        elif right_list:
+            result += right_list
+            right_list = []
+    return result
+
+
 @time_log("归并排序算法-递归实现")
 def merge_sort_merge(arr: list, left=None, right=None) -> list:
     """
@@ -28,36 +46,29 @@ def merge_sort_merge(arr: list, left=None, right=None) -> list:
     return arr
 
 
-def merge(left_list: list, right_list: list) -> list:
-    result = []
-    while left_list or right_list:
-        if left_list:
-            if right_list:
-                if left_list[0] < right_list[0]:
-                    result.append(left_list.pop(0))
-                else:
-                    result.append(right_list.pop(0))
-            else:
-                result += left_list
-                left_list = []
-        elif right_list:
-            result += right_list
-            right_list = []
-    return result
-
-
+@time_log("归并排序算法-迭代实现")
 def merge_sort_in_iteration(arr: list) -> list:
+    """
+        时间复杂度：O(nlogn)  空间复杂度：O(1)
+        归并排序算法-迭代实现：
+        1.设置步长step为1，根据步长将数组内相邻的区间进行排序
+        2.每循环一次，step*2  PS：步长的选择也会影响算法的复杂度，这里用2的n次方比较简单
+        3.直到step>arr.length，循环结束，此时列表有序
+        :return:
+        """
     length = len(arr)
     step = 1
     while step < length:
-        index = 0
-        while index * step < length:
-            arr[index * step:index * step + 2 * step] = merge(arr[index*step: index * step + step], arr[index * step + step:index * step + step + step])
-            index += 1
+        left, mid, right = 0, step, 2 * step
+        while left < length:
+            arr[left:right] = merge(arr[left:mid], arr[mid:right] if mid <= length else [])
+            left = right
+            mid = left + step
+            right = mid + step
         step *= 2
     return arr
 
 
 if __name__ == "__main__":
-    # print(merge_sort_merge(sort_list))
+    print(merge_sort_merge(sort_list))
     print(merge_sort_in_iteration(sort_list))
