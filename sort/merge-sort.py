@@ -32,9 +32,11 @@ def merge_sort_merge(arr: list, left=None, right=None) -> list:
     1.将列表根据中位数分成左右两部分，重复这一步骤，直到分到最小
     2.将分成的最小部分排序，然后合并之后继续排序
     3.重复直到最大的两部分排序完成，此时列表有序
+    :param arr:
+    :param left:
+    :param right:
     :return:
     """
-
     if left is not None:
         if left < right:
             mid = (left + right) // 2
@@ -49,13 +51,14 @@ def merge_sort_merge(arr: list, left=None, right=None) -> list:
 @time_log("归并排序算法-迭代实现")
 def merge_sort_in_iteration(arr: list) -> list:
     """
-        时间复杂度：O(nlogn)  空间复杂度：O(n)
-        归并排序算法-迭代实现：
-        1.设置步长step为1，根据步长将数组内相邻的区间进行排序
-        2.每循环一次，step*2  PS：步长的选择也会影响算法的复杂度，这里用2的n次方比较简单
-        3.直到step>arr.length，循环结束，此时列表有序
-        :return:
-        """
+    时间复杂度：O(nlogn)  空间复杂度：O(n)
+    归并排序算法-迭代实现：
+    1.设置步长step为1，根据步长将数组内相邻的区间进行排序
+    2.每循环一次，step*2  PS：步长的选择也会影响算法的复杂度，这里用2的n次方比较简单
+    3.直到step>arr.length，循环结束，此时列表有序
+    :param arr:
+    :return:
+    """
     length = len(arr)
     step = 1
     while step < length:
