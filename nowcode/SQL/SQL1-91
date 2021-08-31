@@ -158,3 +158,18 @@ select e.emp_no, e.first_name, e.last_name, b.btype, s.salary, (CASE WHEN b.btyp
 
 # 60.难度：较难 over关键字的用法，利用聚合函数
 SELECT emp_no, salary, SUM(salary) OVER(ORDER BY emp_no) running_total FROM salaries WHERE to_date='9999-01-01';
+
+# 61.难度：较难 关键点在于字符串也可以比较大小
+SELECT e1.first_name FROM employees e1 WHERE (SELECT COUNT(*) FROM employees e2 WHERE e1.first_name>=e2.first_name)%2 =1;
+
+# 62.难度：简单 group by分组然后count计数判断
+SELECT number FROM grade GROUP BY number HAVING count(number)>=3;
+
+# 63.难度：中等 跟61类似，通过中间表来查询排名，同时注意用distinct去重
+SELECT p1.*, (SELECT COUNT(DISTINCT number) FROM passing_number WHERE number>=p1.number) as t_rank FROM passing_number p1 ORDER BY number DESC;
+
+# 64.难度：简单 没什么难度，左连接+order by
+SELECT p.*, t.content FROM person p LEFT JOIN task t ON (p.id=t.person_id) ORDER BY p.id;
+
+# 65.难度：较难
+SELECT e1.date, ROUND((SELECT COUNT(*) FROM email e2 LEFT JOIN user u1 ON (e2.send_id=u1.id) LEFT JOIN user u2 ON (e2.receive_id=u2.id) WHERE (u1.is_blacklist=1 OR u2.is_blacklist=1) AND e1.date=e2.date)/(SELECT COUNT(*) FROM email e2 LEFT JOIN user u1 ON (e2.send_id=u1.id) LEFT JOIN user u2 ON (e2.receive_id=u2.id) WHERE u1.is_blacklist=0 AND u2.is_blacklist=0 AND e1.date=e2.date),2) FROM email e1 GROUP BY date ORDER BY e1.date;
