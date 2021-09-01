@@ -172,4 +172,3 @@ SELECT p1.*, (SELECT COUNT(DISTINCT number) FROM passing_number WHERE number>=p1
 SELECT p.*, t.content FROM person p LEFT JOIN task t ON (p.id=t.person_id) ORDER BY p.id;
 
 # 65.难度：较难
-SELECT e1.date, ROUND((SELECT COUNT(*) FROM email e2 LEFT JOIN user u1 ON (e2.send_id=u1.id) LEFT JOIN user u2 ON (e2.receive_id=u2.id) WHERE (u1.is_blacklist=1 OR u2.is_blacklist=1) AND e1.date=e2.date)/(SELECT COUNT(*) FROM email e2 LEFT JOIN user u1 ON (e2.send_id=u1.id) LEFT JOIN user u2 ON (e2.receive_id=u2.id) WHERE u1.is_blacklist=0 AND u2.is_blacklist=0 AND e1.date=e2.date),2) FROM email e1 GROUP BY date ORDER BY e1.date;
