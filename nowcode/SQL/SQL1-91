@@ -175,6 +175,3 @@ SELECT e.date, ROUND((SUM(CASE e.type WHEN 'no_completed' THEN 1 ELSE 0 END))/CO
 
 # 66.难度：简单 先GROUP BY分组，用MAX选出最大日期，然后ORDER BY对结果排序
 SELECT user_id, MAX(`date`) FROM login GROUP BY user_id ORDER BY user_id;
-
-# 67.难度：较难
-
