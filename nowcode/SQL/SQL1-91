@@ -4,88 +4,150 @@
 
 
 # 1.难度：入门 降序首条，这里直接用order by + limit
-SELECT * FROM employees ORDER BY hire_date DESC LIMIT 1;
+SELECT *
+FROM employees
+ORDER BY hire_date DESC LIMIT 1;
 
 # 2.难度：简单 降序第三条，同第一题，不过limit要给两个参数，相当于index和length
-SELECT * FROM employees ORDER BY hire_date DESC LIMIT 2,1;
+SELECT *
+FROM employees
+ORDER BY hire_date DESC LIMIT 2,1;
 
 # 3.难度：中等 左连接、右连接和内连接的用法
-SELECT s.*, d.dept_no FROM salaries s INNER JOIN dept_manager d ON s.emp_no=d.emp_no ORDER BY s.emp_no ASC;
+SELECT s.*, d.dept_no
+FROM salaries s
+INNER JOIN dept_manager d ON s.emp_no=d.emp_no
+ORDER BY s.emp_no ASC;
 
 # 4.难度：简单 同上一题
-SELECT e.last_name, e.first_name, d.dept_no FROM dept_emp d LEFT JOIN employees e ON d.emp_no=e.emp_no;
+SELECT e.last_name, e.first_name, d.dept_no
+FROM dept_emp d
+LEFT JOIN employees e ON d.emp_no=e.emp_no;
 
 # 5.难度：中等 同上一题
-SELECT e.last_name, e.first_name, d.dept_no FROM dept_emp d RIGHT JOIN employees e ON d.emp_no=e.emp_no;
+SELECT e.last_name, e.first_name, d.dept_no
+FROM dept_emp d
+RIGHT JOIN employees e ON d.emp_no=e.emp_no;
 
 # 7.难度：简单 having关键字的用法，一般统计筛选用
-SELECT emp_no, COUNT(emp_no) as t FROM salaries GROUP BY emp_no HAVING t>15;
+SELECT emp_no, COUNT(emp_no) as t
+FROM salaries
+GROUP BY emp_no HAVING t>15;
 
 # 8.难度：简单 分组+排序
-SELECT salary FROM salaries GROUP BY salary ORDER BY salary DESC;
+SELECT salary
+FROM salaries
+GROUP BY salary ORDER BY salary DESC;
 
 # 10.难度：简单 外连接的变种
-SELECT e.emp_no FROM employees e LEFT JOIN dept_manager d ON e.emp_no=d.emp_no WHERE d.dept_no IS NULL;
+SELECT e.emp_no
+FROM employees e
+LEFT JOIN dept_manager d ON e.emp_no=d.emp_no
+WHERE d.dept_no IS NULL;
 
 # 11.难度：中等 同上一题
-SELECT d1.emp_no, d2.emp_no manage FROM dept_emp d1 LEFT JOIN dept_manager d2 ON d1.dept_no=d2.dept_no WHERE d1.emp_no!=d2.emp_no;
+SELECT d1.emp_no, d2.emp_no manage
+FROM dept_emp d1
+LEFT JOIN dept_manager d2 ON d1.dept_no=d2.dept_no
+WHERE d1.emp_no!=d2.emp_no;
 
 # 12.难度：困难 先建立临时表取得部门工资最高数量，再内连接工资表，查出最高工资者
-SELECT t.dept_no, max(s.emp_no), t.maxSalary FROM (SELECT d.dept_no, max(s.salary) as maxSalary FROM dept_emp d, salaries s WHERE d.emp_no=s.emp_no GROUP BY d.dept_no) t INNER JOIN salaries s ON s.salary=t.maxSalary GROUP BY t.dept_no ORDER BY t.dept_no;
+SELECT t.dept_no, max(s.emp_no), t.maxSalary
+FROM (SELECT d.dept_no, max(s.salary) as maxSalary FROM dept_emp d, salaries s WHERE d.emp_no=s.emp_no GROUP BY d.dept_no) t
+INNER JOIN salaries s ON s.salary=t.maxSalary
+GROUP BY t.dept_no ORDER BY t.dept_no;
 
 # 15.难度：简单 where条件的运用
-SELECT * FROM employees WHERE (emp_no%2)=1 AND last_name!='Mary' ORDER BY hire_date DESC;
+SELECT *
+FROM employees
+WHERE (emp_no%2)=1 AND last_name!='Mary'
+ORDER BY hire_date DESC;
 
 # 16.难度：中等 sql函数avg关键字的运用
-SELECT t.title, AVG(s.salary) as salary FROM titles t, salaries s WHERE t.emp_no=s.emp_no GROUP BY t.title ORDER BY salary;
+SELECT t.title, AVG(s.salary) as salary
+FROM titles t, salaries s
+WHERE t.emp_no=s.emp_no
+GROUP BY t.title ORDER BY salary;
 
 # 17.难度：简单 降序第二条，跟第一二题同理
-SELECT emp_no, salary FROM salaries ORDER BY salary DESC LIMIT 1,1;
+SELECT emp_no, salary
+FROM salaries
+ORDER BY salary DESC LIMIT 1,1;
 
 # 18.难度：较难 找出薪水第二高的人，关键点在于不能使用order by，思路就是max，第一遍找最大来排除，第二遍找最大来锁定
-SELECT e.emp_no, s.salary, e.last_name, e.first_name FROM employees e, salaries s WHERE e.emp_no=s.emp_no AND s.salary=(SELECT max(salary) FROM salaries WHERE salary!=(SELECT max(salary) FROM salaries));
+SELECT e.emp_no, s.salary, e.last_name, e.first_name
+FROM employees e, salaries s
+WHERE e.emp_no=s.emp_no AND s.salary=(SELECT max(salary) FROM salaries WHERE salary!=(SELECT max(salary) FROM salaries));
 
 # 19.难度：中等 员工表，部门表和中间表，查询用两次left join
-SELECT e.last_name, e.first_name, d.dept_name FROM employees e LEFT JOIN dept_emp de ON e.emp_no=de.emp_no LEFT JOIN departments d ON de.dept_no=d.dept_no;
+SELECT e.last_name, e.first_name, d.dept_name
+FROM employees e
+LEFT JOIN dept_emp de ON e.emp_no=de.emp_no
+LEFT JOIN departments d ON de.dept_no=d.dept_no;
 
 # 21.难度：困难 思路是创建两张临时表，员工表先内连接一张在职员工当前薪水表，再内连接一张员工入职的薪水表，最后升序即可
-SELECT e.emp_no, (t1.salary-t2.salary) AS growth FROM employees e INNER JOIN (SELECT emp_no, salary FROM salaries WHERE to_date='9999-01-01') t1 ON t1.emp_no=e.emp_no LEFT JOIN (SELECT s.emp_no, s.salary FROM salaries s, (SELECT emp_no, min(to_date) AS to_date FROM salaries GROUP BY emp_no) t WHERE s.emp_no=t.emp_no AND s.to_date=t.to_date) t2 ON t2.emp_no=e.emp_no ORDER BY growth ASC;
+SELECT e.emp_no, (t1.salary-t2.salary) AS growth
+FROM employees e
+INNER JOIN (SELECT emp_no, salary FROM salaries WHERE to_date='9999-01-01') t1 ON t1.emp_no=e.emp_no
+LEFT JOIN (SELECT s.emp_no, s.salary FROM salaries s, (SELECT emp_no, min(to_date) AS to_date FROM salaries GROUP BY emp_no) t WHERE s.emp_no=t.emp_no AND s.to_date=t.to_date) t2 ON t2.emp_no=e.emp_no
+ORDER BY growth ASC;
 
 # 22.难度：中等 跨表查询，利用count计数，group by分组
-SELECT d.*, COUNT(s.emp_no) FROM departments d, dept_emp, salaries s WHERE d.dept_no=dept_emp.dept_no AND dept_emp.emp_no=s.emp_no GROUP BY d.dept_no ORDER BY d.dept_no;
+SELECT d.*, COUNT(s.emp_no)
+FROM departments d, dept_emp, salaries s
+WHERE d.dept_no=dept_emp.dept_no AND dept_emp.emp_no=s.emp_no
+GROUP BY d.dept_no ORDER BY d.dept_no;
 
 # 23.难度：较难 跨表查询，依然是利用count计数去重
-SELECT s1.emp_no, s1.salary, (SELECT COUNT(DISTINCT s2.salary) FROM salaries s2 WHERE s2.salary >= s1.salary) t_rank FROM salaries s1 ORDER BY t_rank, s1.emp_no;
+SELECT s1.emp_no, s1.salary, (SELECT COUNT(DISTINCT s2.salary) FROM salaries s2 WHERE s2.salary >= s1.salary) t_rank
+FROM salaries s1 ORDER BY t_rank, s1.emp_no;
 
 # 24.难度：较难 利用左连接找出非管理者
-SELECT t.dept_no, t.emp_no, t.salary FROM (SELECT d1.emp_no, d1.dept_no, s.salary, d2.to_date FROM dept_emp d1 LEFT JOIN salaries s ON d1.emp_no=s.emp_no LEFT JOIN dept_manager d2 ON d1.emp_no=d2.emp_no) t WHERE t.to_date IS NULL AND t.salary IS NOT NULL;
+SELECT t.dept_no, t.emp_no, t.salary
+FROM (SELECT d1.emp_no, d1.dept_no, s.salary, d2.to_date FROM dept_emp d1 LEFT JOIN salaries s ON d1.emp_no=s.emp_no LEFT JOIN dept_manager d2 ON d1.emp_no=d2.emp_no) t
+WHERE t.to_date IS NULL AND t.salary IS NOT NULL;
 
 # 25.难度：困难 左连接+1，然后通过where筛选
-SELECT d.emp_no, t.manager_no, s.salary, t.manager_salary FROM dept_emp d LEFT JOIN (SELECT d1.dept_no, d1.emp_no manager_no, s1.salary manager_salary FROM dept_manager d1, salaries s1 WHERE d1.emp_no=s1.emp_no) ON t.dept_no=d.dept_no LEFT JOIN salaries s ON d.emp_no=s.emp_no WHERE s.salary>t.manager_salary;
+SELECT d.emp_no, t.manager_no, s.salary, t.manager_salary
+FROM dept_emp d LEFT JOIN (SELECT d1.dept_no, d1.emp_no manager_no, s1.salary manager_salary FROM dept_manager d1, salaries s1 WHERE d1.emp_no=s1.emp_no) ON t.dept_no=d.dept_no
+LEFT JOIN salaries s ON d.emp_no=s.emp_no WHERE s.salary>t.manager_salary;
 
 # 26.难度：困难 group by的双字段分组，然后order by排序
-SELECT d.dept_no, de.dept_name, t.title, COUNT(t.title) t FROM titles t, dept_emp d, departments de WHERE d.emp_no=t.emp_no AND d.dept_no=de.dept_no GROUP BY d.dept_no, t.title ORDER BY d.dept_no;
+SELECT d.dept_no, de.dept_name, t.title, COUNT(t.title) t
+FROM titles t, dept_emp d, departments de
+WHERE d.emp_no=t.emp_no AND d.dept_no=de.dept_no
+GROUP BY d.dept_no, t.title ORDER BY d.dept_no;
 
 # 28.难度：困难 条件具有优先级，要保证类型的电影数量>5，而且简介包含robot
-SELECT c.name, COUNT(f.film_id) FROM film_category fc, category c, film f WHERE fc.film_id=f.film_id AND c.category_id=fc.category_id AND f.description LIKE '%robot%' AND c.category_id IN (SELECT category_id FROM film_category GROUP BY category_id HAVING COUNT(film_id)>=5);
+SELECT c.name, COUNT(f.film_id)
+FROM film_category fc, category c, film f
+WHERE fc.film_id=f.film_id AND c.category_id=fc.category_id AND f.description LIKE '%robot%' AND c.category_id IN (SELECT category_id FROM film_category GROUP BY category_id HAVING COUNT(film_id)>=5);
 
 # 29.难度：中等 左链接筛选出分类名字为空的
-SELECT f.film_id, f.title FROM film f LEFT JOIN film_category fc ON f.film_id=fc.film_id LEFT JOIN category c ON fc.category_id=c.category_id WHERE c.name IS NULL;
+SELECT f.film_id, f.title
+FROM film f
+LEFT JOIN film_category fc ON f.film_id=fc.film_id
+LEFT JOIN category c ON fc.category_id=c.category_id WHERE c.name IS NULL;
 
 # 30.难度：中等 子查询找出分类id，然后搜索对应电影
-SELECT f.title, f.description FROM film f, film_category fc, (SELECT category_id FROM category WHERE name='Action') t WHERE f.film_id=fc.film_id AND fc.category_id=t.category_id;
+SELECT f.title, f.description
+FROM film f, film_category fc, (SELECT category_id FROM category WHERE name='Action') t
+WHERE f.film_id=fc.film_id AND fc.category_id=t.category_id;
 
 # 32.难度：简单 concat关键字的用法，拼接字符串
-SELECT CONCAT(last_name,' ', first_name) FROM employees;
+SELECT CONCAT(last_name,' ', first_name)
+FROM employees;
 
 # 33.难度：中等 create table语句
 CREATE TABLE actor (actor_id smallint(5) NOT NULL, first_name varchar(45) NOT NULL, last_name varchar(45) NOT NULL, last_update date NOT NULL, PRIMARY KEY (actor_id));
 
 # 34.难度：简单 insert into语句
-INSERT INTO actor (actor_id, first_name, last_name, last_update) VALUES (1, 'PENELOPE', 'GUINESS', '2006-02-15 12:34:33'), (2, 'NICK', 'WAHLBERG', '2006-02-15 12:34:33');
+INSERT INTO actor (actor_id, first_name, last_name, last_update)
+VALUES (1, 'PENELOPE', 'GUINESS', '2006-02-15 12:34:33'), (2, 'NICK', 'WAHLBERG', '2006-02-15 12:34:33');
 
 # 35.难度：中等 insert ignore语句
-INSERT IGNORE actor (actor_id, first_name, last_name, last_update) value (3, 'ED', 'CHASE', '2006-02-15 12:34:33');
+INSERT IGNORE actor (actor_id, first_name, last_name, last_update)
+VALUE (3, 'ED', 'CHASE', '2006-02-15 12:34:33');
 
 # 36.难度：中等 创建数据库后插入数据
 一。先创建再插入
@@ -115,13 +177,16 @@ ALTER TABLE actor ADD create_date datetime NOT NULL DEFAULT '2020-10-01 00:00:00
 CREATE TRIGGER audit_log AFTER INSERT ON employees_test FOR EACH ROW BEGIN INSERT INTO audit (emp_no, name) values (new.id, new.name); end;
 
 # 42.难度：简单 这里用了两层中间表，原因是因为mysql在执行delete操作的时候，where条件不能是同一表查询出来的结果
-DELETE FROM titles_test WHERE id NOT IN (SELECT t.id FROM (SELECT id FROM titles_test GROUP BY emp_no) t);
+DELETE FROM titles_test
+WHERE id NOT IN (SELECT t.id FROM (SELECT id FROM titles_test GROUP BY emp_no) t);
 
 # 43.难度：简单 同上，两层中间表
-UPDATE titles_test SET from_date='2001-01-01', to_date=NULL WHERE id IN (SELECT t.id FROM (SELECT id FROM titles_test WHERE to_date='9999-01-01') t);
+UPDATE titles_test SET from_date='2001-01-01', to_date=NULL
+WHERE id IN (SELECT t.id FROM (SELECT id FROM titles_test WHERE to_date='9999-01-01') t);
 
 # 44.难度：简单 利用replace关键字来进行替换
-UPDATE titles_test SET emp_no=REPLACE(emp_no, '10001', '10005') WHERE id=5;
+UPDATE titles_test SET emp_no=REPLACE(emp_no, '10001', '10005')
+WHERE id=5;
 
 # 45.难度：简单 alter的修改表明用法
 ALTER TABLE titles_test RENAME titles_2017;
@@ -130,48 +195,86 @@ ALTER TABLE titles_test RENAME titles_2017;
 ALTER TABLE audit ADD CONSTRAINT fk_employees_test FOREIGN KEY (emp_no) REFERENCES employees_test(id);
 
 # 48.难度：中等 中间表获取emp_no
-UPDATE salaries SET salary=salary * 1.1 WHERE emp_no IN (SELECT emp_no FROM emp_bonus) AND to_date='9999-01-01';
+UPDATE salaries SET salary=salary * 1.1
+WHERE emp_no IN (SELECT emp_no FROM emp_bonus) AND to_date='9999-01-01';
 
 # 50.难度：中等 concat的用法，同第32提，难度却是一个简单一个中等，无力吐槽
-SELECT CONCAT(last_name, "'", first_name) FROM employees;
+SELECT CONCAT(last_name, "'", first_name)
+FROM employees;
 
 # 51.难度：中等 length关键字的可以计算字符串长度
 SELECT LENGTH("10,A,B") - LENGTH(REPLACE("10,A,B", ",", "")) as cnt;
 
 # 52.难度：中等 通过right关键字获取最后2个字符
-SELECT first_name FROM employees ORDER BY RIGHT(first_name, 2);
+SELECT first_name
+FROM employees
+ORDER BY RIGHT(first_name, 2);
 
 # 53.难度：中等 group_concat关键字的用法
-SELECT dept_no, GROUP_CONCAT(emp_no) FROM dept_emp GROUP BY dept_no;
+SELECT dept_no, GROUP_CONCAT(emp_no)
+FROM dept_emp
+GROUP BY dept_no;
 
 # 54.难度：中等 利用中间表查出在职员工的最大工资和最小工资，筛选后用avg取平均值
-SELECT AVG(t.salary) FROM (SELECT salary FROM salaries WHERE salary>(SELECT MIN(salary) FROM salaries WHERE to_date='9999-01-01') AND salary<(SELECT MAX(salary) FROM salaries WHERE to_date='9999-01-01') AND to_date='9999-01-01') t;
+SELECT AVG(t.salary)
+FROM (SELECT salary FROM salaries WHERE salary>(SELECT MIN(salary) FROM salaries WHERE to_date='9999-01-01') AND salary<(SELECT MAX(salary) FROM salaries WHERE to_date='9999-01-01') AND to_date='9999-01-01') t;
 
 # 55.难度：中等 利用limit关键字做分页
 SELECT * FROM employees LIMIT 5,5;
 
 # 57.难度：中等 exists关键字的用法
-SELECT e.* FROM employees e WHERE NOT EXISTS(SELECT e.emp_no FROM dept_emp d  WHERE d.emp_no=e.emp_no);
+SELECT e.*
+FROM employees e
+WHERE NOT EXISTS(SELECT e.emp_no FROM dept_emp d  WHERE d.emp_no=e.emp_no);
 
 # 59.难度：较难 case关键字的用法
-select e.emp_no, e.first_name, e.last_name, b.btype, s.salary, (CASE b.btype WHEN 1 THEN s.salary * 0.1 WHEN 2 THEN s.salary * 0.2 ELSE s.salary * 0.3 END) bouns FROM employees e LEFT JOIN emp_bonus b ON b.emp_no=e.emp_no LEFT JOIN salaries s ON e.emp_no=s.emp_no WHERE s.to_date='9999-01-01' AND b.btype IS NOT NULL;
+select e.emp_no, e.first_name, e.last_name, b.btype, s.salary, (CASE b.btype WHEN 1 THEN s.salary * 0.1 WHEN 2 THEN s.salary * 0.2 ELSE s.salary * 0.3 END) bouns
+FROM employees e
+LEFT JOIN emp_bonus b ON b.emp_no=e.emp_no
+LEFT JOIN salaries s ON e.emp_no=s.emp_no
+WHERE s.to_date='9999-01-01' AND b.btype IS NOT NULL;
+
 # 60.难度：较难 over关键字的用法，利用聚合函数
-SELECT emp_no, salary, SUM(salary) OVER(ORDER BY emp_no) running_total FROM salaries WHERE to_date='9999-01-01';
+SELECT emp_no, salary, SUM(salary) OVER(ORDER BY emp_no) running_total
+FROM salaries
+WHERE to_date='9999-01-01';
 
 # 61.难度：较难 关键点在于字符串也可以比较大小
-SELECT e1.first_name FROM employees e1 WHERE (SELECT COUNT(*) FROM employees e2 WHERE e1.first_name>=e2.first_name)%2 =1;
+SELECT e1.first_name
+FROM employees e1
+WHERE (SELECT COUNT(*) FROM employees e2 WHERE e1.first_name>=e2.first_name)%2=1;
 
 # 62.难度：简单 group by分组然后count计数判断
-SELECT number FROM grade GROUP BY number HAVING count(number)>=3;
+SELECT number
+FROM grade
+GROUP BY number HAVING count(number)>=3;
 
 # 63.难度：中等 跟61类似，通过中间表来查询排名，同时注意用distinct去重
-SELECT p1.*, (SELECT COUNT(DISTINCT number) FROM passing_number WHERE number>=p1.number) as t_rank FROM passing_number p1 ORDER BY number DESC;
+SELECT p1.*, (SELECT COUNT(DISTINCT number) FROM passing_number WHERE number>=p1.number) as t_rank
+FROM passing_number p1
+ORDER BY number DESC;
 
 # 64.难度：简单 没什么难度，左连接+order by
-SELECT p.*, t.content FROM person p LEFT JOIN task t ON p.id=t.person_id ORDER BY p.id;
+SELECT p.*, t.content
+FROM person p
+LEFT JOIN task t ON p.id=t.person_id
+ORDER BY p.id;
 
 # 65.难度：较难 先通过where条件筛选出全部邮件，再通过type找出不成功的邮件，关键字在于ROUND、SUM、CASE和COUNT的组合
-SELECT e.date, ROUND((SUM(CASE e.type WHEN 'no_completed' THEN 1 ELSE 0 END))/COUNT(1), 3) FROM email e LEFT JOIN user u1 ON e.send_id=u1.id LEFT JOIN user u2 ON e.receive_id=u2.id WHERE u1.is_blacklist=0 AND u2.is_blacklist=0 GROUP BY e.date ORDER BY e.date;
+SELECT e.date, ROUND((SUM(CASE e.type WHEN 'no_completed' THEN 1 ELSE 0 END))/COUNT(1), 3)
+FROM email e LEFT JOIN user u1 ON e.send_id=u1.id
+LEFT JOIN user u2 ON e.receive_id=u2.id
+WHERE u1.is_blacklist=0 AND u2.is_blacklist=0 GROUP BY e.date ORDER BY e.date;
 
 # 66.难度：简单 先GROUP BY分组，用MAX选出最大日期，然后ORDER BY对结果排序
-SELECT user_id, MAX(`date`) FROM login GROUP BY user_id ORDER BY user_id;
+SELECT user_id, MAX(`date`)
+FROM login
+GROUP BY user_id ORDER BY user_id;
+
+# 67.难度：较难 通过GROUP BY查出每个用户最大的ID，然后与login表内联选出这条记录即可
+SELECT u.name, c.name, `date` as d
+FROM login l
+LEFT JOIN user u ON l.user_id=u.id
+LEFT JOIN client c ON l.client_id=c.id
+INNER JOIN (SELECT max(id) id FROM login GROUP BY user_id) t ON l.id=t.id
+GROUP BY l.user_id ORDER BY u.name;
