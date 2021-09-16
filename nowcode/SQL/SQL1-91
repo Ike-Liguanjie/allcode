@@ -278,3 +278,6 @@ LEFT JOIN user u ON l.user_id=u.id
 LEFT JOIN client c ON l.client_id=c.id
 INNER JOIN (SELECT max(id) id FROM login GROUP BY user_id) t ON l.id=t.id
 GROUP BY l.user_id ORDER BY u.name;
+
+# 68.难度：较难 通过找出首次登录的用户的第二天日期，和login表做内连接，筛选出来的数据就是留存的数据
+SELECT ROUND((SELECT COUNT(*) FROM login l INNER JOIN (SELECT user_id,DATE_ADD(`date`, INTERVAL 1 DAY) login_date FROM login GROUP BY user_id) t ON l.user_id=t.user_id AND l.date=t.login_date)/(SELECT COUNT(DISTINCT user_id) FROM login), 3);
