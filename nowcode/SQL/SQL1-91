@@ -280,4 +280,24 @@ INNER JOIN (SELECT max(id) id FROM login GROUP BY user_id) t ON l.id=t.id
 GROUP BY l.user_id ORDER BY u.name;
 
 # 68.难度：较难 通过找出首次登录的用户的第二天日期，和login表做内连接，筛选出来的数据就是留存的数据
-SELECT ROUND((SELECT COUNT(*) FROM login l INNER JOIN (SELECT user_id,DATE_ADD(`date`, INTERVAL 1 DAY) login_date FROM login GROUP BY user_id) t ON l.user_id=t.user_id AND l.date=t.login_date)/(SELECT COUNT(DISTINCT user_id) FROM login), 3);
+SELECT ROUND((SELECT COUNT(*)
+              FROM login l
+              INNER JOIN (SELECT user_id,DATE_ADD(`date`, INTERVAL 1 DAY) login_date
+                          FROM login GROUP BY user_id) t ON l.user_id=t.user_id AND l.date=t.login_date)/
+              (SELECT COUNT(DISTINCT user_id) FROM login), 3);
+
+# 69.难度：较难 两次GROUP BY，第一次来找出有新用户登录的date，第二次来统计当天有新用户登录的次数
+SELECT l.date, (SELECT COUNT(*) FROM (SELECT date FROM login GROUP BY user_id) t WHERE l.date=t.date)
+FROM login l GROUP BY l.date;
+
+# 70.难度：困难
+
+SELECT login.date, (CASE WHEN t2.num>0 THEN t2.num ELSE 0.000 END) FROM login LEFT JOIN (SELECT COUNT(*) num,t.date FROM login l
+INNER JOIN (SELECT user_id,DATE_ADD(`date`, INTERVAL 1 DAY) login_date,date FROM login GROUP BY user_id) t ON l.user_id=t.user_id AND l.date=t.login_date
+GROUP BY l.date) t2 ON login.date=t2.date GROUP BY login.date;
+
+
+SELECT login.date,t2.num,t3.num (CASE WHEN t2.num>0 THEN ROUND(t2.num/t3.num2,3) ELSE 0.000 END) FROM login
+LEFT JOIN (SELECT COUNT(*) num,t.date FROM login l INNER JOIN (SELECT user_id,DATE_ADD(`date`, INTERVAL 1 DAY) login_date,date FROM login GROUP BY user_id) t ON l.user_id=t.user_id AND l.date=t.login_date GROUP BY l.date) t2 ON login.date=t2.date
+LEFT JOIN (SELECT l.date, (SELECT COUNT(*) FROM (SELECT date FROM login GROUP BY user_id) t WHERE l.date=t.date) FROM login l GROUP BY l.date) t3 ON login.date=t3.date
+GROUP BY login.date;
