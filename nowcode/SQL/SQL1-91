@@ -3,83 +3,98 @@
     很多题目的缺失是因为题库没这道题，不知道为什么。
 
 
-# 1.难度：入门 降序首条，这里直接用order by + limit
+# 1.查找最晚入职员工的所有信息：入门
+# 降序首条，这里直接用order by + limit
 SELECT *
 FROM employees
 ORDER BY hire_date DESC LIMIT 1;
 
-# 2.难度：简单 降序第三条，同第一题，不过limit要给两个参数，相当于index和length
+# 2.查找入职员工时间排名倒数第三的员工所有信息：简单
+# 降序第三条，同第一题，不过limit要给两个参数，相当于index和length
 SELECT *
 FROM employees
 ORDER BY hire_date DESC LIMIT 2,1;
 
-# 3.难度：中等 左连接、右连接和内连接的用法
+# 3.查找当前薪水详情以及部门编号dept_no：中等
+# 左连接、右连接和内连接的用法
 SELECT s.*, d.dept_no
 FROM salaries s
 INNER JOIN dept_manager d ON s.emp_no=d.emp_no
 ORDER BY s.emp_no ASC;
 
-# 4.难度：简单 同上一题
+# 4.查找所有已经分配部门的员工的last_name和first_name以及dept_no：简单
+# 同上一题
 SELECT e.last_name, e.first_name, d.dept_no
 FROM dept_emp d
 LEFT JOIN employees e ON d.emp_no=e.emp_no;
 
-# 5.难度：中等 同上一题
+# 5.查找所有员工的last_name和first_name以及对应部门编号dept_no：中等
+# 同上一题
 SELECT e.last_name, e.first_name, d.dept_no
 FROM dept_emp d
 RIGHT JOIN employees e ON d.emp_no=e.emp_no;
 
-# 7.难度：简单 having关键字的用法，一般统计筛选用
+# 7.查找薪水记录超过15次的员工号emp_no以及其对应的记录次数t：简单
+# having关键字的用法，一般统计筛选用
 SELECT emp_no, COUNT(emp_no) as t
 FROM salaries
 GROUP BY emp_no HAVING t>15;
 
-# 8.难度：简单 分组+排序
+# 8.找出所有员工当前薪水salary情况：简单
+# 分组+排序
 SELECT salary
 FROM salaries
 GROUP BY salary ORDER BY salary DESC;
 
-# 10.难度：简单 外连接的变种
+# 10.获取所有非manager的员工emp_no：简单
+# 外连接的变种
 SELECT e.emp_no
 FROM employees e
 LEFT JOIN dept_manager d ON e.emp_no=d.emp_no
 WHERE d.dept_no IS NULL;
 
-# 11.难度：中等 同上一题
+# 11.获取所有员工当前的manager：中等
+# 同上一题
 SELECT d1.emp_no, d2.emp_no manage
 FROM dept_emp d1
 LEFT JOIN dept_manager d2 ON d1.dept_no=d2.dept_no
 WHERE d1.emp_no!=d2.emp_no;
 
-# 12.难度：困难 先建立临时表取得部门工资最高数量，再内连接工资表，查出最高工资者
+# 12.获取每个部门中当前员工薪水最高的相关信息：困难
+# 先建立临时表取得部门工资最高数量，再内连接工资表，查出最高工资者
 SELECT t.dept_no, max(s.emp_no), t.maxSalary
 FROM (SELECT d.dept_no, max(s.salary) as maxSalary FROM dept_emp d, salaries s WHERE d.emp_no=s.emp_no GROUP BY d.dept_no) t
 INNER JOIN salaries s ON s.salary=t.maxSalary
 GROUP BY t.dept_no ORDER BY t.dept_no;
 
-# 15.难度：简单 where条件的运用
+# 15.查找employees表emp_no与last_name的员工信息：简单
+# where条件的运用
 SELECT *
 FROM employees
 WHERE (emp_no%2)=1 AND last_name!='Mary'
 ORDER BY hire_date DESC;
 
-# 16.难度：中等 sql函数avg关键字的运用
+# 16.统计出当前各个title类型对应的员工当前薪水对应的平均工资：中等
+# sql函数avg关键字的运用
 SELECT t.title, AVG(s.salary) as salary
 FROM titles t, salaries s
 WHERE t.emp_no=s.emp_no
 GROUP BY t.title ORDER BY salary;
 
-# 17.难度：简单 降序第二条，跟第一二题同理
+# 17.获取当前薪水第二多的员工的emp_no以及其对应的薪水salary：简单
+# 降序第二条，跟第一二题同理
 SELECT emp_no, salary
 FROM salaries
 ORDER BY salary DESC LIMIT 1,1;
 
-# 18.难度：较难 找出薪水第二高的人，关键点在于不能使用order by，思路就是max，第一遍找最大来排除，第二遍找最大来锁定
+# 18.获取当前薪水第二多的员工的emp_no以及其对应的薪水salary：较难
+# 找出薪水第二高的人，关键点在于不能使用order by，思路就是max，第一遍找最大来排除，第二遍找最大来锁定
 SELECT e.emp_no, s.salary, e.last_name, e.first_name
 FROM employees e, salaries s
 WHERE e.emp_no=s.emp_no AND s.salary=(SELECT max(salary) FROM salaries WHERE salary!=(SELECT max(salary) FROM salaries));
 
-# 19.难度：中等 员工表，部门表和中间表，查询用两次left join
+# 19.查找所有员工的last_name和first_name以及对应的dept_name：中等
+# 员工表，部门表和中间表，查询用两次left join
 SELECT e.last_name, e.first_name, d.dept_name
 FROM employees e
 LEFT JOIN dept_emp de ON e.emp_no=de.emp_no
