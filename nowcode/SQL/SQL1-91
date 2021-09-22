@@ -100,78 +100,93 @@ FROM employees e
 LEFT JOIN dept_emp de ON e.emp_no=de.emp_no
 LEFT JOIN departments d ON de.dept_no=d.dept_no;
 
-# 21.难度：困难 思路是创建两张临时表，员工表先内连接一张在职员工当前薪水表，再内连接一张员工入职的薪水表，最后升序即可
+# 21.查找在职员工自入职以来的薪水涨幅情况：困难
+# 思路是创建两张临时表，员工表先内连接一张在职员工当前薪水表，再内连接一张员工入职的薪水表，最后升序即可
 SELECT e.emp_no, (t1.salary-t2.salary) AS growth
 FROM employees e
 INNER JOIN (SELECT emp_no, salary FROM salaries WHERE to_date='9999-01-01') t1 ON t1.emp_no=e.emp_no
 LEFT JOIN (SELECT s.emp_no, s.salary FROM salaries s, (SELECT emp_no, min(to_date) AS to_date FROM salaries GROUP BY emp_no) t WHERE s.emp_no=t.emp_no AND s.to_date=t.to_date) t2 ON t2.emp_no=e.emp_no
 ORDER BY growth ASC;
 
-# 22.难度：中等 跨表查询，利用count计数，group by分组
+# 22.统计各个部门的工资记录数：中等
+# 跨表查询，利用count计数，GROUP BY分组
 SELECT d.*, COUNT(s.emp_no)
 FROM departments d, dept_emp, salaries s
 WHERE d.dept_no=dept_emp.dept_no AND dept_emp.emp_no=s.emp_no
 GROUP BY d.dept_no ORDER BY d.dept_no;
 
-# 23.难度：较难 跨表查询，依然是利用count计数去重
+# 23.对所有员工的薪水按照salary降序进行1-N的排名：较难
+# 跨表查询，依然是利用count计数去重
 SELECT s1.emp_no, s1.salary, (SELECT COUNT(DISTINCT s2.salary) FROM salaries s2 WHERE s2.salary >= s1.salary) t_rank
 FROM salaries s1 ORDER BY t_rank, s1.emp_no;
 
-# 24.难度：较难 利用左连接找出非管理者
+# 24.获取所有非manager员工当前的薪水情况：较难
+# 利用左连接找出非管理者
 SELECT t.dept_no, t.emp_no, t.salary
 FROM (SELECT d1.emp_no, d1.dept_no, s.salary, d2.to_date FROM dept_emp d1 LEFT JOIN salaries s ON d1.emp_no=s.emp_no LEFT JOIN dept_manager d2 ON d1.emp_no=d2.emp_no) t
 WHERE t.to_date IS NULL AND t.salary IS NOT NULL;
 
-# 25.难度：困难 左连接+1，然后通过where筛选
+# 25.获取员工其当前的薪水比其manager当前薪水还高的相关信息：困难
+# 左连接+1，然后通过where筛选
 SELECT d.emp_no, t.manager_no, s.salary, t.manager_salary
 FROM dept_emp d LEFT JOIN (SELECT d1.dept_no, d1.emp_no manager_no, s1.salary manager_salary FROM dept_manager d1, salaries s1 WHERE d1.emp_no=s1.emp_no) ON t.dept_no=d.dept_no
 LEFT JOIN salaries s ON d.emp_no=s.emp_no WHERE s.salary>t.manager_salary;
 
-# 26.难度：困难 group by的双字段分组，然后order by排序
+# 26.汇总各个部门当前员工的title类型的分配数目：困难
+# GROUP BY的双字段分组，然后order by排序
 SELECT d.dept_no, de.dept_name, t.title, COUNT(t.title) t
 FROM titles t, dept_emp d, departments de
 WHERE d.emp_no=t.emp_no AND d.dept_no=de.dept_no
 GROUP BY d.dept_no, t.title ORDER BY d.dept_no;
 
-# 28.难度：困难 条件具有优先级，要保证类型的电影数量>5，而且简介包含robot
+# 28.查找描述信息中包含robot的电影对应的分类名称以及电影数目，而且还需要该分类对应电影数量>=5部：困难
+# 条件具有优先级，要保证类型的电影数量>5，而且简介包含robot
 SELECT c.name, COUNT(f.film_id)
 FROM film_category fc, category c, film f
 WHERE fc.film_id=f.film_id AND c.category_id=fc.category_id AND f.description LIKE '%robot%' AND c.category_id IN (SELECT category_id FROM film_category GROUP BY category_id HAVING COUNT(film_id)>=5);
 
-# 29.难度：中等 左链接筛选出分类名字为空的
+# 29.使用join查询方式找出没有分类的电影id以及名称：中等
+# 左链接筛选出分类名字为空的
 SELECT f.film_id, f.title
 FROM film f
 LEFT JOIN film_category fc ON f.film_id=fc.film_id
 LEFT JOIN category c ON fc.category_id=c.category_id WHERE c.name IS NULL;
 
-# 30.难度：中等 子查询找出分类id，然后搜索对应电影
+# 30.使用子查询的方式找出属于Action分类的所有电影对应的title,description：中等
+# 子查询找出分类id，然后搜索对应电影
 SELECT f.title, f.description
 FROM film f, film_category fc, (SELECT category_id FROM category WHERE name='Action') t
 WHERE f.film_id=fc.film_id AND fc.category_id=t.category_id;
 
-# 32.难度：简单 concat关键字的用法，拼接字符串
+# 32.将employees表的所有员工的last_name和first_name拼接起来作为Name：简单
+# concat关键字的用法，拼接字符串
 SELECT CONCAT(last_name,' ', first_name)
 FROM employees;
 
-# 33.难度：中等 create table语句
+# 33.创建一个actor表，包含如下列信息：中等
+# create table语句
 CREATE TABLE actor (actor_id smallint(5) NOT NULL, first_name varchar(45) NOT NULL, last_name varchar(45) NOT NULL, last_update date NOT NULL, PRIMARY KEY (actor_id));
 
-# 34.难度：简单 insert into语句
+# 34.批量插入数据：简单
+# insert into语句
 INSERT INTO actor (actor_id, first_name, last_name, last_update)
 VALUES (1, 'PENELOPE', 'GUINESS', '2006-02-15 12:34:33'), (2, 'NICK', 'WAHLBERG', '2006-02-15 12:34:33');
 
-# 35.难度：中等 insert ignore语句
+# 35.批量插入数据，不使用replace操作：中等
+# insert ignore语句
 INSERT IGNORE actor (actor_id, first_name, last_name, last_update)
 VALUE (3, 'ED', 'CHASE', '2006-02-15 12:34:33');
 
-# 36.难度：中等 创建数据库后插入数据
+# 36.创建一个actor_name表：中等
+# 创建数据库后插入数据
 一。先创建再插入
 CREATE TABLE actor_name (first_name varchar(45) NOT NULL, last_name varchar(45) NOT NULL);
 INSERT INTO actor_name SELECT first_name, last_name FROM actor;
 二。创建的同时插入
 CREATE TABLE IF NOT EXISTS actor_name (first_name varchar(45) NOT NULL, last_name varchar(45) NOT NULL) SELECT first_name,last_name FROM actor;
 
-# 37.难度：中等 创建索引
+# 37.对first_name创建唯一索引uniq_idx_firstname：中等
+# 创建索引
 一。alter
 ALTER TABLE actor ADD UNIQUE uniq_idx_firstname (first_name);
 ALTER TABLE actor ADD INDEX idx_lastname (last_name);
@@ -179,114 +194,140 @@ ALTER TABLE actor ADD INDEX idx_lastname (last_name);
 CREATE UNIQUE INDEX uniq_idx_firstname on actor (first_name);
 CREATE INDEX idx_lastname ON actor (last_name);
 
-# 38.难度：中等 create view关键字创建视图
+# 38.针对actor表创建视图actor_name_view：中等
+# create view关键字创建视图
 CREATE VIEW actor_name_view(first_name_v, last_name_v) AS SELECT first_name, last_name FROM actor WITH CHECK OPTION;
 
-# 39.难度：中等 force关键字强制使用索引
+# 39.针对上面的salaries表emp_no字段创建索引idx_emp_no：中等
+# force关键字强制使用索引
 SELECT * FROM salaries FORCE INDEX (idx_emp_no) WHERE emp_no='10005';
 
-# 40.难度：中等 alter增加字段
+# 40.在last_update后面新增加一列名字为create_date：中等
+# alter增加字段
 ALTER TABLE actor ADD create_date datetime NOT NULL DEFAULT '2020-10-01 00:00:00' AFTER last_update;
 
-# 41.难度：中等 create trigger关键字创建触发器
+# 41.构造一个触发器audit_log：中等
+# create trigger关键字创建触发器
 CREATE TRIGGER audit_log AFTER INSERT ON employees_test FOR EACH ROW BEGIN INSERT INTO audit (emp_no, name) values (new.id, new.name); end;
 
-# 42.难度：简单 这里用了两层中间表，原因是因为mysql在执行delete操作的时候，where条件不能是同一表查询出来的结果
+# 42.删除emp_no重复的记录，只保留最小的id对应的记录：简单
+# 这里用了两层中间表，原因是因为mysql在执行delete操作的时候，where条件不能是同一表查询出来的结果
 DELETE FROM titles_test
 WHERE id NOT IN (SELECT t.id FROM (SELECT id FROM titles_test GROUP BY emp_no) t);
 
-# 43.难度：简单 同上，两层中间表
+# 43.将所有to_date为9999-01-01的全部更新为NULL：简单
+# 同上，两层中间表
 UPDATE titles_test SET from_date='2001-01-01', to_date=NULL
 WHERE id IN (SELECT t.id FROM (SELECT id FROM titles_test WHERE to_date='9999-01-01') t);
 
-# 44.难度：简单 利用replace关键字来进行替换
+# 44.将id=5以及emp_no=10001的行数据替换成id=5以及emp_no=10005：简单
+# 利用replace关键字来进行替换
 UPDATE titles_test SET emp_no=REPLACE(emp_no, '10001', '10005')
 WHERE id=5;
 
-# 45.难度：简单 alter的修改表明用法
+# 45.将titles_test表名修改为titles_2017：简单
+# alter的修改表明用法
 ALTER TABLE titles_test RENAME titles_2017;
 
-# 46.难度：中等 alter的添加外键用法
+# 46.在audit表上创建外键约束，其emp_no对应employees_test表的主键id：中等
+# alter的添加外键用法
 ALTER TABLE audit ADD CONSTRAINT fk_employees_test FOREIGN KEY (emp_no) REFERENCES employees_test(id);
 
-# 48.难度：中等 中间表获取emp_no
+# 48.将所有获取奖金的员工当前的薪水增加10%：中等
+# 中间表获取emp_no
 UPDATE salaries SET salary=salary * 1.1
 WHERE emp_no IN (SELECT emp_no FROM emp_bonus) AND to_date='9999-01-01';
 
-# 50.难度：中等 concat的用法，同第32提，难度却是一个简单一个中等，无力吐槽
+# 50.将employees表中的所有员工的last_name和first_name通过引号连接起来：中等
+# concat的用法，同第32提，难度却是一个简单一个中等，无力吐槽
 SELECT CONCAT(last_name, "'", first_name)
 FROM employees;
 
-# 51.难度：中等 length关键字的可以计算字符串长度
+# 51.查找字符串 10,A,B 中逗号,出现的次数cnt：中等
+# length关键字的可以计算字符串长度
 SELECT LENGTH("10,A,B") - LENGTH(REPLACE("10,A,B", ",", "")) as cnt;
 
-# 52.难度：中等 通过right关键字获取最后2个字符
+# 52.获取Employees中的first_name：中等
+# 通过right关键字获取最后2个字符
 SELECT first_name
 FROM employees
 ORDER BY RIGHT(first_name, 2);
 
-# 53.难度：中等 group_concat关键字的用法
+# 53.按照dept_no进行汇总：中等
+# group_concat关键字的用法
 SELECT dept_no, GROUP_CONCAT(emp_no)
 FROM dept_emp
 GROUP BY dept_no;
 
-# 54.难度：中等 利用中间表查出在职员工的最大工资和最小工资，筛选后用avg取平均值
+# 54.查找排除当前最大、最小salary之后的员工的平均工资avg_salary：中等
+# 利用中间表查出在职员工的最大工资和最小工资，筛选后用avg取平均值
 SELECT AVG(t.salary)
 FROM (SELECT salary FROM salaries WHERE salary>(SELECT MIN(salary) FROM salaries WHERE to_date='9999-01-01') AND salary<(SELECT MAX(salary) FROM salaries WHERE to_date='9999-01-01') AND to_date='9999-01-01') t;
 
-# 55.难度：中等 利用limit关键字做分页
+# 55.分页查询employees表，每5行一页，返回第2页的数据：中等
+# 利用limit关键字做分页
 SELECT * FROM employees LIMIT 5,5;
 
-# 57.难度：中等 exists关键字的用法
+# 57.使用含有关键字exists查找未分配具体部门的员工的所有信息：中等
+# exists关键字的用法
 SELECT e.*
 FROM employees e
 WHERE NOT EXISTS(SELECT e.emp_no FROM dept_emp d  WHERE d.emp_no=e.emp_no);
 
-# 59.难度：较难 case关键字的用法
+# 59.获取有奖金的员工相关信息：较难
+# case关键字的用法
 select e.emp_no, e.first_name, e.last_name, b.btype, s.salary, (CASE b.btype WHEN 1 THEN s.salary * 0.1 WHEN 2 THEN s.salary * 0.2 ELSE s.salary * 0.3 END) bouns
 FROM employees e
 LEFT JOIN emp_bonus b ON b.emp_no=e.emp_no
 LEFT JOIN salaries s ON e.emp_no=s.emp_no
 WHERE s.to_date='9999-01-01' AND b.btype IS NOT NULL;
 
-# 60.难度：较难 over关键字的用法，利用聚合函数
+# 60.统计salary的累计和running_total：较难
+# over关键字的用法，利用聚合函数
 SELECT emp_no, salary, SUM(salary) OVER(ORDER BY emp_no) running_total
 FROM salaries
 WHERE to_date='9999-01-01';
 
-# 61.难度：较难 关键点在于字符串也可以比较大小
+# 61.对于employees表中，给出奇数行的first_name：较难
+# 关键点在于字符串也可以比较大小
 SELECT e1.first_name
 FROM employees e1
 WHERE (SELECT COUNT(*) FROM employees e2 WHERE e1.first_name>=e2.first_name)%2=1;
 
-# 62.出现三次以上相同积分的情况：简单 group by分组然后count计数判断
+# 62.出现三次以上相同积分的情况：简单
+# GROUP BY分组然后count计数判断
 SELECT number
 FROM grade
 GROUP BY number HAVING count(number)>=3;
 
-# 63.刷题通过的题目排名：中等 跟61类似，通过中间表来查询排名，同时注意用distinct去重
+# 63.刷题通过的题目排名：中等
+# 跟61类似，通过中间表来查询排名，同时注意用distinct去重
 SELECT p1.*, (SELECT COUNT(DISTINCT number) FROM passing_number WHERE number>=p1.number) as t_rank
 FROM passing_number p1
 ORDER BY number DESC;
 
-# 64.找到每个人的任务：简单 没什么难度，左连接+order by
+# 64.找到每个人的任务：简单
+# 没什么难度，左连接+order by
 SELECT p.*, t.content
 FROM person p
 LEFT JOIN task t ON p.id=t.person_id
 ORDER BY p.id;
 
-# 65.异常概率邮件：较难 先通过where条件筛选出全部邮件，再通过type找出不成功的邮件，关键字在于ROUND、SUM、CASE和COUNT的组合
+# 65.异常概率邮件：较难
+# 先通过where条件筛选出全部邮件，再通过type找出不成功的邮件，关键字在于ROUND、SUM、CASE和COUNT的组合
 SELECT e.date, ROUND((SUM(CASE e.type WHEN 'no_completed' THEN 1 ELSE 0 END))/COUNT(1), 3)
 FROM email e LEFT JOIN user u1 ON e.send_id=u1.id
 LEFT JOIN user u2 ON e.receive_id=u2.id
 WHERE u1.is_blacklist=0 AND u2.is_blacklist=0 GROUP BY e.date ORDER BY e.date;
 
-# 66.牛客每个人最近的登录日期(一)：简单 先GROUP BY分组，用MAX选出最大日期，然后ORDER BY对结果排序
+# 66.牛客每个人最近的登录日期(一)：简单
+# 先GROUP BY分组，用MAX选出最大日期，然后ORDER BY对结果排序
 SELECT user_id, MAX(`date`)
 FROM login
 GROUP BY user_id ORDER BY user_id;
 
-# 67.牛客每个人最近的登录日期(二)：较难 通过GROUP BY查出每个用户最大的ID，然后与login表内联选出这条记录即可
+# 67.牛客每个人最近的登录日期(二)：较难
+# 通过GROUP BY查出每个用户最大的ID，然后与login表内联选出这条记录即可
 SELECT u.name, c.name, `date` as d
 FROM login l
 LEFT JOIN user u ON l.user_id=u.id
@@ -294,18 +335,21 @@ LEFT JOIN client c ON l.client_id=c.id
 INNER JOIN (SELECT max(id) id FROM login GROUP BY user_id) t ON l.id=t.id
 GROUP BY l.user_id ORDER BY u.name;
 
-# 68.牛客每个人最近的登录日期(三)：较难 通过找出首次登录的用户的第二天日期，和login表做内连接，筛选出来的数据就是留存的数据
+# 68.牛客每个人最近的登录日期(三)：较难
+# 通过找出首次登录的用户的第二天日期，和login表做内连接，筛选出来的数据就是留存的数据
 SELECT ROUND((SELECT COUNT(*)
               FROM login l
               INNER JOIN (SELECT user_id,DATE_ADD(`date`, INTERVAL 1 DAY) login_date
                           FROM login GROUP BY user_id) t ON l.user_id=t.user_id AND l.date=t.login_date)/
               (SELECT COUNT(DISTINCT user_id) FROM login), 3);
 
-# 69.牛客每个人最近的登录日期(四)：较难 两次GROUP BY，第一次来找出有新用户登录的date，第二次来统计当天有新用户登录的次数
+# 69.牛客每个人最近的登录日期(四)：较难
+# 两次GROUP BY，第一次来找出有新用户登录的date，第二次来统计当天有新用户登录的次数
 SELECT l.date, (SELECT COUNT(*) FROM (SELECT date FROM login GROUP BY user_id) t WHERE l.date=t.date)
 FROM login l GROUP BY l.date;
 
-# 70.牛客每个人最近的登录日期(五)：困难 先找出新用户次日登录的记录，再找出新用户登录的记录，两张的数字相除
+# 70.牛客每个人最近的登录日期(五)：困难
+# 先找出新用户次日登录的记录，再找出新用户登录的记录，两张的数字相除
 SELECT login.date, (CASE WHEN t2.num>0 THEN ROUND(t2.num/(SELECT COUNT(*) FROM (SELECT date FROM login GROUP BY user_id) t1 WHERE login.date=t1.date),3) ELSE 0.000 END) FROM login
 LEFT JOIN (SELECT COUNT(*) num,t.date
            FROM login l
@@ -314,8 +358,34 @@ LEFT JOIN (SELECT COUNT(*) num,t.date
                        GROUP BY l.date) t2 ON login.date=t2.date
 GROUP BY login.date;
 
-# 71.牛客每个人最近的登录日期(六)：较难 左连接user表找出name，根据日期SUM相同id的题目即可
+# 71.牛客每个人最近的登录日期(六)：较难
+# 左连接user表找出name，根据日期SUM相同id的题目即可
 SELECT u.name, pn1.date, (SELECT SUM(number) FROM passing_number pn2 WHERE pn2.user_id=pn1.user_id AND pn2.date<=pn1.date)
 FROM passing_number pn1
 LEFT JOIN user u ON pn1.user_id=u.id
 ORDER BY pn1.date,u.name;
+
+# 72.考试分数(一)：简单
+# GROUP BY分组，AVG求平均，ROUND进行四舍五入
+SELECT job, ROUND(AVG(score), 3) nums FROM grade GROUP BY job ORDER BY nums DESC;
+
+# 73.考试分数(二)：中等
+# 左连接分组后的平均分中间表，利用WHERE条件筛选去＞平均分的记录
+# SELECT g.* FROM grade g
+LEFT JOIN (SELECT job, ROUND(AVG(score), 3) nums FROM grade GROUP BY job) t ON t.job=g.job
+WHERE g.score>t.nums;
+
+# 73.考试分数(三)：较难
+# 先利用中间表筛选出每组分数排名前2的用户，然后再排序
+SELECT g1.id, l.name, g1.score FROM grade g1
+LEFT JOIN language l ON g1.language_id=l.id
+WHERE (SELECT COUNT(DISTINCT g2.score)
+       FROM grade g2
+       WHERE g2.language_id=g1.language_id AND g2.score>=g1.score)<=2
+ORDER BY l.name, g1.score DESC, g1.id;
+
+# 73.考试分数(四)：较难
+# 根据分组后job的count来判断start和end，奇数的start要加余数
+SELECT job, FLOOR(COUNT(1)/2)+COUNT(1)%2, FLOOR(COUNT(1)/2)+1
+FROM grade
+GROUP BY job ORDER BY job;
