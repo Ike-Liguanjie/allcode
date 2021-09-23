@@ -384,8 +384,20 @@ WHERE (SELECT COUNT(DISTINCT g2.score)
        WHERE g2.language_id=g1.language_id AND g2.score>=g1.score)<=2
 ORDER BY l.name, g1.score DESC, g1.id;
 
-# 73.考试分数(四)：较难
+# 75.考试分数(四)：较难
 # 根据分组后job的count来判断start和end，奇数的start要加余数
 SELECT job, FLOOR(COUNT(1)/2)+COUNT(1)%2, FLOOR(COUNT(1)/2)+1
 FROM grade
 GROUP BY job ORDER BY job;
+
+# 76.考试分数(五)：困难
+
+SELECT DISTINCT g2.id, g2.job, g2.score, (SELECT COUNT(1)
+                                 FROM grade g1
+                                 WHERE g1.job=g2.job AND g1.score>=g2.score)
+FROM grade g2
+LEFT JOIN (SELECT g3.job, FLOOR(COUNT(1)/2)+COUNT(1)%2 start, FLOOR(COUNT(1)/2)+1 end
+           FROM grade g3
+           GROUP BY g3.job) t ON t.job=g2.job
+WHERE (SELECT COUNT(1) FROM grade g4 WHERE g4.job=g2.job AND g4.id>=g2.id)=t.start OR
+(SELECT COUNT(1) FROM grade g4 WHERE g4.job=g2.job AND g4.id>=g2.id)=t.end;
