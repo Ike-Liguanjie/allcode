@@ -391,7 +391,7 @@ FROM grade
 GROUP BY job ORDER BY job;
 
 # 76.考试分数(五)：困难
-
+# 通过两次临时表来找出中位数成绩的记录，一次临时表来找出排名
 SELECT DISTINCT g2.id, g2.job, g2.score, (SELECT COUNT(1)
                                  FROM grade g1
                                  WHERE g1.job=g2.job AND g1.score>=g2.score)
@@ -399,5 +399,5 @@ FROM grade g2
 LEFT JOIN (SELECT g3.job, FLOOR(COUNT(1)/2)+COUNT(1)%2 start, FLOOR(COUNT(1)/2)+1 end
            FROM grade g3
            GROUP BY g3.job) t ON t.job=g2.job
-WHERE (SELECT COUNT(1) FROM grade g4 WHERE g4.job=g2.job AND g4.id>=g2.id)=t.start OR
-(SELECT COUNT(1) FROM grade g4 WHERE g4.job=g2.job AND g4.id>=g2.id)=t.end;
+WHERE (SELECT COUNT(1) FROM grade g4 WHERE g4.job=g2.job AND g4.score>=g2.score)=t.start OR
+(SELECT COUNT(1) FROM grade g4 WHERE g4.job=g2.job AND g4.score>=g2.score)=t.end;
