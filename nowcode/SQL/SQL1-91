@@ -410,3 +410,21 @@ SELECT *
 FROM order_info
 WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
 ORDER BY id;
+
+# 78.牛客的课程订单分析(二)：中等
+# 同上，增加分组和having筛选
+SELECT user_id
+FROM order_info
+WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
+GROUP BY user_id HAVING COUNT(status) >= 2 ORDER BY user_id;
+
+# 79.牛客的课程订单分析(三)：中等
+# 一遍GROUP BY子表找出user_id，二遍筛选出符合条件的记录
+SELECT *
+FROM order_info
+WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
+AND user_id IN (SELECT user_id
+                FROM order_info
+                WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
+                GROUP BY user_id HAVING COUNT(status) >= 2)
+ORDER BY id;
