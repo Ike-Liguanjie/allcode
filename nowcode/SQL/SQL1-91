@@ -145,7 +145,8 @@ GROUP BY d.dept_no, t.title ORDER BY d.dept_no;
 # 条件具有优先级，要保证类型的电影数量>5，而且简介包含robot
 SELECT c.name, COUNT(f.film_id)
 FROM film_category fc, category c, film f
-WHERE fc.film_id=f.film_id AND c.category_id=fc.category_id AND f.description LIKE '%robot%' AND c.category_id IN (SELECT category_id FROM film_category GROUP BY category_id HAVING COUNT(film_id)>=5);
+WHERE fc.film_id=f.film_id AND c.category_id=fc.category_id AND f.description LIKE '%robot%'
+AND c.category_id IN (SELECT category_id FROM film_category GROUP BY category_id HAVING COUNT(film_id)>=5);
 
 # 29.使用join查询方式找出没有分类的电影id以及名称：中等
 # 左链接筛选出分类名字为空的
@@ -428,3 +429,109 @@ AND user_id IN (SELECT user_id
                 WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
                 GROUP BY user_id HAVING COUNT(status) >= 2)
 ORDER BY id;
+
+# 80.牛客的课程订单分析(四)：较难
+# 同78题，对于分组后的记录进行计数和选出最小date
+SELECT user_id, MIN(date), COUNT(status)
+FROM order_info
+WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
+GROUP BY user_id HAVING COUNT(status) >= 2 ORDER BY user_id;
+
+# 81.牛客的课程订单分析(五)：困难
+# 同79题，找出符合条件的记录，筛去最小日期，取得第二小日期，然后左连接到80题上即可
+SELECT oi.user_id, MIN(oi.date), t1.date, COUNT(oi.status)
+FROM order_info oi
+LEFT JOIN (SELECT oi.user_id, MIN(oi.date) date
+           FROM order_info oi, (SELECT user_id, MIN(date) date
+                                FROM order_info
+                                WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
+                                GROUP BY user_id HAVING COUNT(status) >= 2) t
+           WHERE oi.product_name IN ('C++', 'Java', 'Python') AND oi.status='completed' AND oi.date>'2025-10-15'
+           AND oi.user_id=t.user_id AND oi.date!=t.date
+           GROUP BY oi.user_id) t1 ON t1.user_id=oi.user_id
+WHERE oi.product_name IN ('C++', 'Java', 'Python') AND oi.status='completed' AND oi.date>'2025-10-15'
+GROUP BY oi.user_id HAVING COUNT(status) >= 2 ORDER BY oi.user_id;
+
+# 82.牛客的课程订单分析(六)：中等
+# 同79题，找出符合条件的记录，左链接client表
+SELECT oi.id, oi.is_group_buy, c.name
+FROM order_info oi
+LEFT JOIN client c ON (oi.client_id=c.id)
+WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
+AND user_id IN (SELECT user_id
+                FROM order_info
+                WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
+                GROUP BY user_id HAVING COUNT(status) >= 2)
+ORDER BY oi.id;
+
+# 83.牛客的课程订单分析(七)：较难
+# 同82题，找出符合的条件的记录，左连接client表，利用CASE显示client为0的source
+SELECT (CASE oi.client_id WHEN 0 THEN 'GroupBuy' ELSE c.name END) source, COUNT(oi.id)
+FROM order_info oi
+LEFT JOIN client c ON (oi.client_id=c.id)
+WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
+AND user_id IN (SELECT user_id
+                FROM order_info
+                WHERE product_name IN ('C++', 'Java', 'Python') AND status='completed' AND date>'2025-10-15'
+                GROUP BY user_id HAVING COUNT(status) >= 2)
+GROUP BY oi.client_id ORDER BY source;
+
+# 84.实习广场投递简历分析(一)：简单
+# 分组SUM，能按顺序算到这里的话，这题就过于简单了
+SELECT job, SUM(num) nums
+FROM resume_info
+WHERE date<'2026-01-01' AND date>='2025-01-01'
+GROUP BY job ORDER BY nums DESC;
+
+# 85.实习广场投递简历分析(二)：中等
+# 很简单的分组，难点在于怎么取得每条记录的月份，比较方便的就是DATE_FORMAT，或者自己拼接成%Y-%m的字符串格式
+SELECT job, DATE_FORMAT(date, '%Y-%m') mon, SUM(num) nums
+FROM resume_info
+WHERE date<'2026-01-01' AND date>='2025-01-01'
+GROUP BY job, mon ORDER BY mon DESC,nums DESC;
+
+# 86.实习广场投递简历分析(三)：困难
+# 同上，两遍查询分别找出25年和26年的数据，WHERE条件job和月份相等
+SELECT ri.job, DATE_FORMAT(ri.date, '%Y-%m') mon, SUM(ri.num) nums, t.mon, t.nums
+FROM resume_info ri, (SELECT job, DATE_FORMAT(date, '%Y-%m') mon, SUM(num) nums, MONTH(date) m
+                      FROM resume_info
+                      WHERE date<'2027-01-01' AND date>='2026-01-01'
+                      GROUP BY job, mon) t
+WHERE ri.date<'2026-01-01' AND ri.date>='2025-01-01' AND ri.job=t.job AND MONTH(date)=t.m
+GROUP BY ri.job, mon ORDER BY mon DESC, ri.job DESC;
+
+# 87.最差是第几名(一)：中等
+# 同60题，利用over关键字，聚合函数
+SELECT grade, SUM(number) OVER(ORDER BY grade) FROM class_grade;
+
+# 88.最差是第几名(二)：较难
+# 利用中间表87，通过中位数找出符合条件的第一条，最后用union聚合
+SELECT t1.grade FROM (SELECT t.grade FROM (SELECT grade, SUM(number) OVER(ORDER BY grade) num FROM class_grade) t
+                      where t.num>=(SELECT ROUND(SUM(number)/2) FROM class_grade) limit 1) t1
+UNION
+SELECT t2.grade FROM (SELECT t.grade FROM (SELECT grade, SUM(number) OVER(ORDER BY grade) num FROM class_grade) t
+                      where t.num>=(SELECT ROUND(SUM(number)/2)+(CASE SUM(number)%2 WHEN 0 THEN 1 WHEN 1 THEN 0 END) FROM class_grade) limit 1) t2
+
+# 89.获得积分最多的人(一)：中等
+# 分组SUM通过order by取最大，左连接显示名字
+SELECT u.name, SUM(gi.grade_num) nums FROM grade_info gi
+LEFT JOIN user u ON gi.user_id=u.id
+GROUP BY gi.user_id ORDER BY nums DESC LIMIT 1;
+
+# 90.获得积分最多的人(二)：较难
+# 同上，一遍找出最高分，内连结接找出所有相同分
+SELECT t1.* FROM (SELECT u.id, u.name, SUM(gi.grade_num) nums FROM grade_info gi
+                  LEFT JOIN user u ON gi.user_id=u.id
+                  GROUP BY gi.user_id ORDER BY gi.user_id) t1
+INNER JOIN (SELECT SUM(gi.grade_num) nums FROM grade_info gi
+            LEFT JOIN user u ON gi.user_id=u.id
+            GROUP BY gi.user_id ORDER BY nums DESC LIMIT 1) t2 ON t1.nums=t2.nums
+
+# 91.获得积分最多的人(三)：困难
+# 同上，SUM内利用CASE来找出正确的总分
+SELECT t1.* FROM (SELECT u.id, u.name, SUM(CASE gi.type WHEN 'add' THEN gi.grade_num WHEN 'reduce' THEN 0-gi.grade_num END) nums FROM grade_info gi
+                  LEFT JOIN user u ON gi.user_id=u.id
+                  GROUP BY gi.user_id ORDER BY gi.user_id) t1
+INNER JOIN (SELECT SUM(CASE gi.type WHEN 'add' THEN gi.grade_num WHEN 'reduce' THEN 0-gi.grade_num END) nums FROM grade_info gi
+            LEFT JOIN user u ON gi.user_id=u.id
+            GROUP BY gi.user_id ORDER BY nums DESC LIMIT 1) t2 ON t1.nums=t2.nums
