@@ -535,3 +535,19 @@ SELECT t1.* FROM (SELECT u.id, u.name, SUM(CASE gi.type WHEN 'add' THEN gi.grade
 INNER JOIN (SELECT SUM(CASE gi.type WHEN 'add' THEN gi.grade_num WHEN 'reduce' THEN 0-gi.grade_num END) nums FROM grade_info gi
             LEFT JOIN user u ON gi.user_id=u.id
             GROUP BY gi.user_id ORDER BY nums DESC LIMIT 1) t2 ON t1.nums=t2.nums
+
+# 92.商品交易(网易校招笔试真题)：中等
+# 订单表根据goods_id分组，左连接到goods表上再通过where筛选
+SELECT g.id, g.name, g.weight, t.nums
+FROM goods g
+LEFT JOIN (SELECT goods_id, SUM(count) nums
+          FROM trans GROUP BY goods_id) t ON g.id=t.goods_id
+WHERE g.weight<50 AND t.nums>20;
+
+# 93.网易云音推荐(网易校招笔试真题)：较难
+# 两张中间表来找出关注人喜欢的音乐和排除自己已经喜欢的音乐，结果用DISTINCT去重
+SELECT DISTINCT m.music_name FROM music_likes ml
+LEFT JOIN music m ON m.id=ml.music_id
+WHERE ml.user_id IN (SELECT f.follower_id FROM follow f WHERE f.user_id=1)
+AND ml.music_id NOT IN (SELECT music_id FROM music_likes WHERE user_id=1)
+ORDER BY m.id
