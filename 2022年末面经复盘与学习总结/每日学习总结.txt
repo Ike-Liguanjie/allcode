@@ -9,3 +9,30 @@ etcd是一个高可用的分布式KV数据库，采用raft算法来保证数据�
 2.kratos框架介绍
 这是一个用go语言实现的微服务框架，为了满足各种场景的需求，框架将所有服务拆分做成不同的库，用户可以自由选择组合使用其中的各种功能。
 框架实现了日志、认证、路由管理与负载均衡、限流器等功能，采用protobuf进行API通信，提供了丰富的CLI指令，可以迅速生成代码文件，快速搭起一个服务。
+
+# 2024年1月2日
+1.golang中MAP的实现
+// A header for a Go map.
+type hmap struct {
+    count     int
+    // 代表哈希表中的元素个数，调用len(map)时，返回的就是该字段值。
+    flags     uint8
+    // 状态标志，下文常量中会解释四种状态位含义。
+    B         uint8
+    // buckets（桶）的对数log_2
+    // 如果B=5，则buckets数组的长度 = 2^5=32，意味着有32个桶
+    noverflow uint16
+    // 溢出桶的大概数量
+    hash0     uint32
+    // 哈希种子
+
+    buckets    unsafe.Pointer
+    // 指向buckets数组的指针，数组大小为2^B，如果元素个数为0，它为nil。
+    oldbuckets unsafe.Pointer
+    // 如果发生扩容，oldbuckets是指向老的buckets数组的指针，老的buckets数组大小是新的buckets的1/2;非扩容状态下，它为nil。
+    nevacuate  uintptr
+    // 表示扩容进度，小于此地址的buckets代表已搬迁完成。
+
+    extra *mapextra
+    // 这个字段是为了优化GC扫描而设计的。当key和value均不包含指针，并且都可以inline时使用。extra是指向mapextra类型的指针。
+ }
