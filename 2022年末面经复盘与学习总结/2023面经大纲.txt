@@ -241,7 +241,22 @@
 
 5.网络相关
 1. Tcp的三次握手，四次挥手
+    名词解释：
+        SYN、ACK、FIN，TCP协议报文的标志位。
+        seq：Sequence Numbe 序列号
+        ack：Acknowledgement Number 确认号
+    三次挥手：
+        1.客户端发送SYN=1，seq为x的包，同时自身进入SYN_SEND状态。
+        2.服务端收到客户端的包后，返回SYN=1，ACK=1，seq=y，ack=x+1的包，同时自身进入SYN_RCVD状态。
+        3.客户端收到后返回SYN=0，ACK=1，ack=y+1的包，此时进入ESTABLISHED状态，服务端收到后也进入ESTABLISHED状态，此时三次握手结束，TCP连接建立。
+    四次挥手：
+        1.客户端发送FIN=1，seq为x的包给服务端，表明自身没有数据可发送了，同时自身进入FIN_WAIT_1状态。
+        2.服务端收到后返回ACK=1，ack=x+1的包给客户端，表示已收到请求并在后续准备断开连接，此时服务端进入CLOSE_WAIT状态，客户端在收到这个确认包后会进入FIN_WAIT_2状态。
+        3.服务端准备好断开连接，此时发送FIN=1，ack=y的包给客户端请求断开连接，然后自身进入LAST_ACK状态，等待客户端最后一个ack确认包。
+        4.客户端收到后，返回ACK=1，ack=y+1的确认包给客户端，同时自身进入TIME_AWAIT状态，等待接收可能出现的重传ACK包。
+            此时服务端收到后会进入CLOSED状态关闭连接，客户端在等待2MSL后没收到服务端的ACK包就认为服务端已正常关闭，此时客户端也进入CLOSED状态，四次挥手结束。
 2. Tcp与Udp的区别
+
 3. time_await和time_close，大量出现怎么解决
 4. http和http2的区别，http3了解么
 5. Https的加密、证书相关
